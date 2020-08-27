@@ -1,0 +1,254 @@
+%!TEX TS-program = xelatex
+%!TEX encoding = UTF-8 Unicode
+% The stuff above is for apps like TeXShop and TeXWorks.
+
+%% Unicode normalization of input text.
+%%  0: no normalization (default)
+%%  1: normalize to NFC
+%%  2: normalize to NFD
+%%
+%% You almost always want NFC (1) because otherwise diacritics get decomposed
+%% even in macro names. This causes TeX to puke. Because OSes have different
+%% practices, it's better to choose this explicitly rather than rely on a
+%% possibly unknown default.
+%%
+%% This has to be done first because everything else is affected by it.
+\XeTeXinputnormalization 1
+
+%% File prefix.
+%% This is the unchanging part of all file names for this document.
+\def \FILEPREFIX {swanton-texts}
+
+%% The Memoir class.
+%% The manual is called 'memman.pdf'.
+\documentclass[12pt,letterpaper,oneside,openright,final]{memoir}
+
+%% LaTeX3 command parsing.
+%% Should be used by all modern, right thinking LaTeX programmers.
+\usepackage{xparse}
+
+%% The amsmath package is useful for some non-mathematical stuff as well as the obvious
+%% mathematical advantages. It needs to be loaded very early to avoid package conflicts.
+\usepackage{amsmath}
+
+%%%%
+%%%% Font stuff.
+%%%%
+
+%%%% Basic font configuration. This loads fontspec.
+\input{config/\FILEPREFIX-fonts}
+
+%%%% Font configuration for special symbols.
+\input{config/\FILEPREFIX-fonts-symbols}
+
+%%%%
+%%%% Packages.
+%%%%
+
+%%%% Example formatting with ExPex.
+\input{config/\FILEPREFIX-packages-expex}
+
+%%%% Indexing packages and macros.
+%%%% This must be loaded before BibLaTeX.
+%\input{config/\FILEPREFIX-packages-index}
+
+%%%% Bibliography with BibLaTeX.
+\input{config/\FILEPREFIX-packages-bib}
+
+%%%% ReLedmac critical editions typsetting.
+\input{config/\FILEPREFIX-packages-reledmac}
+
+%%%% Other packages.
+\input{config/\FILEPREFIX-packages-other}
+
+%%%% Hyperlinks and their kin.
+\input{config/\FILEPREFIX-packages-hyper}
+
+%%%%
+%%%% Memoir configuration and layout.
+%%%%
+
+\input{config/\FILEPREFIX-memoir}
+
+%%%%
+%%%% Miscellaneous macrology.
+%%%%
+
+\input{config/\FILEPREFIX-macrology}
+
+%%%%
+%%%% Hy-ph-en-a-tion.
+%%%%
+
+%% This is the easiest way to specify special hyphenation breaks.
+%% The hard way is to modify TeX’s hyphenation tables.
+\hyphenation{sha-m-an}
+
+%%%%%%
+%%%%%%
+%%%%%% Document body.
+%%%%%%
+%%%%%%
+
+%% Which bits to include.
+%%
+%% Leave everything commented out to get the whole kit and kaboodle.
+%%
+
+%\includeonly{chapters/\FILEPREFIX-000-introduction,backmatter/\FILEPREFIX-1-bibliography}
+
+%\includeonly{chapters/\FILEPREFIX-089-origin-of-copper,backmatter/\FILEPREFIX-1-bibliography}
+%\includeonly{chapters/\FILEPREFIX-090-man-abandoned,backmatter/\FILEPREFIX-1-bibliography}
+%\includeonly{chapters/\FILEPREFIX-091-future-little-slave,backmatter/\FILEPREFIX-1-bibliography}
+%\includeonly{chapters/\FILEPREFIX-092-mountain-dweller,backmatter/\FILEPREFIX-1-bibliography}
+%\includeonly{chapters/\FILEPREFIX-093-strong-man,backmatter/\FILEPREFIX-1-bibliography}
+%\includeonly{chapters/\FILEPREFIX-094-wealth-woman,backmatter/\FILEPREFIX-1-bibliography}
+%\includeonly{chapters/\FILEPREFIX-095-kiks.adi-frog,backmatter/\FILEPREFIX-1-bibliography}
+%\includeonly{chapters/\FILEPREFIX-096-kiks.adi-history,backmatter/\FILEPREFIX-1-bibliography}
+%\includeonly{chapters/\FILEPREFIX-097-four-brothers,backmatter/\FILEPREFIX-1-bibliography}
+%\includeonly{chapters/\FILEPREFIX-098-owl-woman,backmatter/\FILEPREFIX-1-bibliography}
+%\includeonly{chapters/\FILEPREFIX-099-salmon-boy-sitka,backmatter/\FILEPREFIX-1-bibliography}
+%\includeonly{chapters/\FILEPREFIX-100-salmon-boy-wrangell,backmatter/\FILEPREFIX-1-bibliography}
+%\includeonly{chapters/\FILEPREFIX-101-khaaxhachgook,backmatter/\FILEPREFIX-1-bibliography}
+%\includeonly{chapters/\FILEPREFIX-102-sealion-hunt,backmatter/\FILEPREFIX-1-bibliography}
+%\includeonly{chapters/\FILEPREFIX-103-spruce-canoe,backmatter/\FILEPREFIX-1-bibliography}
+%\includeonly{chapters/\FILEPREFIX-104-kaagwaantaan-history,backmatter/\FILEPREFIX-1-bibliography}
+%\includeonly{chapters/\FILEPREFIX-105-kwaashkikhwaan-history,backmatter/\FILEPREFIX-1-bibliography}
+%\includeonly{chapters/\FILEPREFIX-106-low-caste-name-wrangell,backmatter/\FILEPREFIX-1-bibliography}
+
+%\includeonly{chapters/\FILEPREFIX-201-tobacco-speeches-wrangell,backmatter/\FILEPREFIX-1-bibliography}
+%\includeonly{chapters/\FILEPREFIX-202-memorial-pole-wrangell,backmatter/\FILEPREFIX-1-bibliography}
+
+%\includeonly{chapters/\FILEPREFIX-301-raven-nose,backmatter/\FILEPREFIX-1-bibliography}
+
+%%%%
+%%%% Frontmatter: Stuff at the beginning.
+%%%%
+
+\begin{document}
+
+%% Print arguments of indexing commands.
+%\showindexmarks
+
+\frontmatter
+
+%%%% These use \input so that they are always included, ignoring any \includeonly.
+
+\input{frontmatter/\FILEPREFIX-A1-titlepage}
+
+\pagestyle{plain}
+\input{frontmatter/\FILEPREFIX-A2-contents}
+
+%\input{frontmatter/\FILEPREFIX-A3-abbreviations}
+
+%%%%
+%%%% Mainmatter: The body.
+%%%%
+\mainmatter
+\pagestyle{mine}
+
+% This makes the introduction chapter 0. The benefit of this is that
+% the ‘first narrative’ is then chapter 1, making references natural. 
+\setcounter{chapter}{-1}
+
+%%%%
+\include{chapters/\FILEPREFIX-000-introduction}
+
+%%%%
+%%%% Part 1: Narratives.
+%%%%
+\part{Narratives}
+
+%%%%
+\include{chapters/\FILEPREFIX-089-origin-of-copper}
+
+%%%%
+\include{chapters/\FILEPREFIX-090-man-abandoned}
+
+%%%%
+\include{chapters/\FILEPREFIX-091-future-little-slave}
+
+%%%%
+\include{chapters/\FILEPREFIX-092-mountain-dweller}
+
+%%%%
+\include{chapters/\FILEPREFIX-093-strong-man}
+
+%%%%
+\include{chapters/\FILEPREFIX-094-wealth-woman}
+
+%%%%
+\include{chapters/\FILEPREFIX-095-kiks.adi-frog}
+
+%%%%
+\include{chapters/\FILEPREFIX-096-kiks.adi-history}
+
+%%%%
+\include{chapters/\FILEPREFIX-097-four-brothers}
+
+%%%%
+\include{chapters/\FILEPREFIX-098-owl-woman}
+
+%%%%
+\include{chapters/\FILEPREFIX-099-salmon-boy-sitka}
+
+%%%%
+\include{chapters/\FILEPREFIX-100-salmon-boy-wrangell}
+
+%%%%
+\include{chapters/\FILEPREFIX-101-khaaxhachgook}
+
+%%%%
+\include{chapters/\FILEPREFIX-102-sealion-hunt}
+
+%%%%
+\include{chapters/\FILEPREFIX-103-spruce-canoe}
+
+%%%%
+\include{chapters/\FILEPREFIX-104-kaagwaantaan-history}
+
+%%%%
+\include{chapters/\FILEPREFIX-105-kwaashkikhwaan-history}
+
+%%%%
+\include{chapters/\FILEPREFIX-106-low-caste-name-wrangell}
+
+%%%%
+%%%% Part 2: Oratory.
+%%%%
+\part{Oratory}
+
+%%%%
+\include{chapters/\FILEPREFIX-201-tobacco-speeches-wrangell}
+
+%%%%
+\include{chapters/\FILEPREFIX-202-memorial-pole-wrangell}
+
+%%%%
+%%%% Part 3: Lyrics.
+%%%%
+\part{Lyrics}
+
+%%%%
+\include{chapters/\FILEPREFIX-301-raven-nose}
+
+%%%%
+%%%% Appendices.
+%%%%
+\appendix
+
+%%%%
+%%%% Backmatter: Stuff at the end.
+%%%%
+\backmatter
+
+%%%%
+\include{backmatter/\FILEPREFIX-1-bibliography}
+
+%%%%
+%\include{backmatter/\FILEPREFIX-2-indices}
+
+%%%% The \input forces inclusion regardless of \includeonly. 
+%\input{backmatter/\FILEPREFIX-3-colophon}
+
+\end{document}

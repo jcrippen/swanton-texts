@@ -1,0 +1,90 @@
+%!TEX root = ../swanton-texts.tex
+%%
+%% Critical edition packages for texts.
+%%
+
+%% reledmac is the primary critical editions macro package.
+\usepackage[%
+		% Disable critical footnotes: \Afootnote, \Bfootnote, etc.
+		nocritical,
+		% Disable tools for \eledsection etc. (§16.2, p. 73)
+		noeledsec,
+		% Disable tools for endnotes: \Aendnote, \Bendnote, etc.
+		noend,
+		% Disable tools for familiar footnotes: \footnoteA, \footnoteB, etc.
+		nofamiliar, 
+		% Disable support for note series in minipage and ledgroup environments.
+		noledgroup,
+		% Levels of notes (A, B, C, D, E) to support.
+		series={A}
+		% The package.
+		]{reledmac}
+
+%% reledpar is the companion package for parallel texts.
+\usepackage[%
+		% Alternate between normal and parallel without line number reset (§4.2.6, p. 10)
+		%continuousnumberingwithcolumns
+		]{reledpar}
+
+%%
+%% Configuration for reledpar text.
+%%
+
+%% Column widths (§4.2.1, p. 9).
+% 0.09375
+\setlength{\Lcolwidth}{0.53125\textwidth}
+\setlength{\Rcolwidth}{0.5625\textwidth}
+%% Column rule width.
+\setlength{\columnrulewidth}{0pt}
+%% Space before column separator.
+\setlength{\beforecolumnseparator}{0.01875\textwidth}
+%% Space after column separator.
+\setlength{\aftercolumnseparator}{0.01875\textwidth}
+
+%% Adjust position of columns on the page: L, R, C. (§4.2.3, p. 9)
+\columnsposition{C}
+
+%% Don't number lines.
+\numberlinefalse
+
+%% Number paragraphs (\pstart commands).
+\numberpstarttrue
+
+%% Put paragraph numbers in the margin (not inline).
+\sidepstartnumtrue
+
+%% Formatting of paragraph numbers.
+\makeatletter
+\renewcommand{\thepstartL}{{\tiny\addfontfeature{Numbers=Lining}¶\@arabic\c@pstartL}}
+\renewcommand{\thepstartR}{{\tiny\addfontfeature{Numbers=Lining}¶\@arabic\c@pstartR}}
+\makeatother
+
+%% Word spacing and hyphenation properties.
+%% Compare to the definition of \midsloppy in memoir.cls:
+%%   \newcommand*{\midsloppy}
+%%     \tolerance 5000%
+%%     \hbadness 4000%
+%%     \emergencystretch 1.5em%
+%%     \hfuzz .1\p@
+%%     \vfuzz\hfuzz}
+%%
+%% Also the TeX defaults are:
+%%    \tolerance 200
+%%    \hbadness 1000
+%%    \hfuzz .1pt
+%%    \vbadness 1000
+%%    \vfuzz .1pt
+\ProvideDocumentCommand \slightlysloppy {} {%
+	\tolerance 800%
+	\hbadness 1100%
+	\emergencystretch 0.5ex%
+	\hfuzz 0.125pt
+	\vfuzz\hfuzz}
+\AtBeginPairs{\slightlysloppy}
+
+%% Command for sentence numbering in reledpar text.
+\ProvideDocumentCommand \snum {m} {{\footnotesize\textsubscript{#1}}\hspace*{0.125ex}}
+
+%% Unused because we’re not doing poetry.
+%\setstanzaindents{1,0,0,0,0,0,0,0,0,0,0}
+%\setcounter{stanzaindentsrepetition}{5}

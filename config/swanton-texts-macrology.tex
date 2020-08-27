@@ -1,0 +1,310 @@
+%!TEX root = ../swanton-texts.tex
+%%
+%% Miscellaneous macrology.
+%%
+
+%% The new LaTeX3 generic document command parser.
+\RequirePackage{xparse}
+%% The new xparse package doesn’t have something built in to test if
+%% something is either -NoValue- or just empty, but it’s easy enough to
+%% implement, so here we go.
+%%
+%% FIXME: Detect if this is defined elsewhere, in case someone else
+%% implements this obvious function.
+\ExplSyntaxOn
+\ProvideExpandableDocumentCommand \IfNoValueOrEmptyTF {mmm}
+ 	{\IfNoValueTF{#1}{#2}
+		{\tl_if_empty:nTF {#1} {#2} {#3}}}
+\ExplSyntaxOff
+
+%% Gloss abbreviations.
+%%
+%% NOTE: Requires document authors to define \glossfont usefully.
+%%
+%% \xx{} is used for abbreviations in text, \zz{} is used for abbreviations in
+%% glosses. The latter uses a condensed font so that it takes up less space.
+%%
+%% Screw people who don’t like two letter macros. These are mine and I don’t
+%% care one whit about your namespace.
+%%
+%% FIXME: Detect lack of \glossfont and print a warning.
+%% FIXME: Detect lack of \scshape and print a warning. This is much harder.
+\ProvideDocumentCommand \xx { m } {\textsc{#1}}
+\ProvideDocumentCommand \zz { m } {{\glossfont\textsc{#1}}}
+
+%% Italicized semantic variables.
+%%
+%% Semantics not in math mode needs explicit italicization, but this should be
+%% presentationally separated from hardcoded \textit{…}. This pair of commands
+%% follows the \fm and \sm templates above.
+\makeatletter
+\ProvideDocumentCommand \sv@cmd { m } {\textit{#1}}
+%% The \sm command has an optional star to prevent hyphenation via
+%% an \mbox, just like \fm above.
+\ProvideDocumentCommand \sv { s m } {%
+	\IfBooleanTF{#1}%
+		{\mbox{\sv@cmd{#2}}}
+		{\sv@cmd{#2}}}
+\makeatother
+
+%% Italicized linguistic forms appearing in text.
+%%
+%% The \fm@cmd command does the underlying formatting.
+%% This just calls LaTeX \emph which does the right thing, but it can be replaced.
+\makeatletter
+\ProvideDocumentCommand \fm@cmd { m } {\emph{#1}}
+\makeatother
+%% The \fm command is the user interface.
+%%
+%%  arg 1: star
+%%    This wraps everything in an mbox to prevent line breaking
+%%    because hyphenation can get ugly especially for suffixes.
+%%  arg 2: stigma
+%%    An optional argument to appear before the form. This can be a
+%%    star (asterisk) since it is always a square bracket argument.
+%%  arg 3: body of linguistic form
+\makeatletter
+\ProvideDocumentCommand \fm { s O{} m } {%
+	\IfBooleanTF{#1}%
+		{\mbox{#2\fm@cmd{#3}}}
+		{#2\nobreak\fm@cmd{#3}}}
+\makeatother
+
+%% Roots.
+%%
+%% The root symbol (U+221A Square Root) in many fonts is taller than
+%% the usual cap or ascender height. This \raisebox hack sticks the
+%% root into a zero-height box so that it doesn’t cause an increase
+%% in leading. Since this symbol often has an excessively large right
+%% sidebearing for our purposes because of the angle of the ascender,
+%% the negative horizontal space in \rtkern kerns the following
+%% letters a bit more closely.
+%%
+%% The optional argument is meant for a superscript number like ² that
+%% indicates the valency of the root. The superscript is rlapped so
+%% that it appears above the vee of the root symbol. Since this never
+%% works properly, a \raisebox moves the superscript around to get in
+%% the right spot. This can be configured using the \rtsuplift length.
+%% The \raisebox for the superscript has zero height and depth so it
+%% doesn't screw up other spacing.
+\newlength{\rtkern}
+\setlength{\rtkern}{-0.0625ex}
+\newlength{\rtsuplift}
+\setlength{\rtsuplift}{0.66ex}
+\ProvideDocumentCommand \rt { o m } {%
+	\IfNoValueOrEmptyTF{#1}{}%
+	{\raisebox{\rtsuplift}[0pt][0pt]{\rlap{\unspace#1\unspace}}}%
+	\raisebox{0pt}[0pt][0pt]{√}\hspace*{\rtkern}#2}
+%% This command allows the root to hang on the left side. It
+%% is meant for column labels where the root symbol otherwise
+%% visually misaligns the column label with the rest of the column.
+%% Note that the \rt{} command still applies \rtkern despite \llap.
+\ProvideDocumentCommand \rtlap { m } {\llap{\rt{}}#1}
+%% The Brill font doesn’t need its roots kerned.
+\setlength{\rtkern}{0pt}
+
+%% Root as a symbol.
+%%
+%% This smashes the root into a 1em vertical box, adding slight whitespace on the right.
+\ProvideDocumentCommand \rtsym {} {\raisebox{0pt}[0.75em][0.25em]{√\!}}
+
+%% Gloss emphasis.
+%%
+%% Though some authors use underlining to emphasize elements in glosses,
+%% this is a bad idea for Tlingit because of the underscore diacritic (U+0330).
+%% I use bolding instead. Optional colouration and background shading can
+%% also be turned on and adjusted to taste. Colour uses the xcolor package.
+%%
+%% This uses LaTeX3 code.
+\makeatletter
+\ExplSyntaxOn
+%% A boolean to toggle bolding on and off.
+\bool_new:c {gmboldbool}
+%% A boolean to toggle colour on and off.
+\bool_new:c {gmcolorbool}
+%% A boolean to toggle background colour on and off.
+\bool_new:c {gmbgcolorbool}
+%% The toggle commands.
+\ProvideDocumentCommand \gmboldon { } {\bool_set_true:c {gmboldbool}}
+\ProvideDocumentCommand \gmboldoff { } {\bool_set_false:c {gmboldbool}}
+\ProvideDocumentCommand \gmcoloron { } {\bool_set_true:c {gmcolorbool}}
+\ProvideDocumentCommand \gmcoloroff { } {\bool_set_false:c {gmcolorbool}}
+\ProvideDocumentCommand \gmbgcoloron { } {\bool_set_true:c {gmbgcolorbool}}
+\ProvideDocumentCommand \gmbgcoloroff { } {\bool_set_false:c {gmbgcolorbool}}
+%% The colours.
+%% FIXME: Expand to allow different xcolor's other colour models, e.g. CMYK.
+\providecolor{gmcolor}{rgb}{0.66,0,0}
+\providecolor{gmbgcolor}{rgb}{0.95,0.95,0.95}
+%% Command to change the colours.
+%% The \definecolor macro overwrites the current value with a new one.
+\ProvideDocumentCommand \gmcolorset { m } {\definecolor{gmcolor}{rgb}{#1}}
+\ProvideDocumentCommand \gmbgcolorset { m } {\definecolor{gmbgcolor}{rgb}{#1}}
+%% A strut with 90 percent of normal height and width for the colorbox.
+%% See http://tex.stackexchange.com/questions/74459/remove-space-before-colorbox
+\ProvideDocumentCommand \gm@smallstrut {}
+	{\vrule width 0pt height 0.9\ht\strutbox depth 0.9\dp\strutbox\relax}
+%%
+%% The guts.
+%%
+\ProvideDocumentCommand \gm@bold { m }
+	{\bool_if:cTF {gmboldbool}
+		{\textbf{#1}}
+		{#1}}
+\ProvideDocumentCommand \gm@color { m }
+	{\bool_if:cTF {gmcolorbool}
+		{\textcolor{gmcolor}{#1}}
+		{#1}}
+\ProvideDocumentCommand \gm@bgcolor { m }
+	{\bool_if:cTF {gmbgcolorbool}
+		% A colorbox has a frame built into it which we set to
+		% zero using \setlength inside a group for scope.
+		{\begingroup
+		\setlength{\fboxsep}{0pt}%
+		\colorbox{gmbgcolor}{\gm@smallstrut{}#1}%
+		\endgroup}
+		{#1}}
+%%
+%% The actual gloss emphasis command \gm.
+%%
+%% NOTE: I’m not sure if the order of operations matters or not. IWFM.
+\ProvideDocumentCommand \gm { m }
+	{\gm@bgcolor{\gm@color{\gm@bold{#1}}}}
+%% Back to normal LaTeX2e.
+\ExplSyntaxOff
+\makeatother
+%% Settings for the \gm gloss emphasis macro.
+%%
+%% Bold text.
+\gmboldoff
+%% Foreground colour.
+\gmcoloroff
+%% Background shading.
+\gmbgcoloron
+%% Adjust the two colours.
+\gmcolorset{0.66,0,0}
+\gmbgcolorset{0.9,0.9,0.9}
+
+%% An underscore.
+%%
+%% Both measurements are font dependent and thus adapt to different font sizes.
+%% The thickness measurement was empirically determined.
+\newlength{\uscorethickness}
+\setlength{\uscorethickness}{0.15625ex}
+\newlength{\uscorewidth}
+\setlength{\uscorewidth}{1.25ex}
+\ProvideDocumentCommand \_ {} {\rule{\uscorewidth}{\uscorethickness}}
+%% The Brill font needs a wider underscore.
+\setlength{\uscorewidth}{0.875em}
+
+%% Notes for later changes.
+%%
+%% FIXME: Detect whether font has U+27E6 & U+27E7, use them instead.
+\newlength{\dblbrackkern}
+\setlength{\dblbrackkern}{-0.325ex}
+\ProvideDocumentCommand \dblbrackleft {} {[\hspace{\dblbrackkern}[}
+\ProvideDocumentCommand \dblbrackright {} {]\hspace{\dblbrackkern}]}
+\ProvideDocumentCommand \FIXME { +m }
+	{\mbox{\dblbrackleft}\textsc{Fixme}: #1\mbox{\dblbrackright}}
+%% Use real double brackets for fixme comments.
+\renewcommand*{\dblbrackleft}{⟦}
+\renewcommand*{\dblbrackright}{⟧}
+
+%% A tilde.
+%\renewcommand*{\~}{\textasciitilde}
+%% For some reason the \textasciitilde macro has recently (circa
+%% February 2017) started producing U+02DC Small Tilde instead
+%% of U+007E Tilde. This forces the latter character.
+\DeclareDocumentCommand \~ {} {\char`~}
+
+%% Phrase labels.
+%%
+%% FIXME: Provide star to toggle fake subscripts or real ones. This
+%% should be the inverse of the star for \textsubscript.
+\ProvideDocumentCommand \pr { m } {\textsubscript*{#1}}
+
+%% Phonetics.
+%%
+%% FIXME: Detect lack of \ipafont and print warning.
+\ProvideDocumentCommand \ipa { m } {{\ipafont #1}}
+
+%% Subscript italic indices.
+%%
+%% FIXME: Detect whether font has a specific subscript (e.g. U+1D62).
+\ProvideDocumentCommand \ix { m } {\textsubscript*{\textit{#1}}}
+
+%% Orthographic representation.
+\ProvideDocumentCommand \orth { m } {⟨#1⟩}
+
+%% Phantom (invisible) hyphens for alignment in examples.
+\ProvideDocumentCommand \· {} {\phantom{-}}
+
+%% Phantom (invisible) equals signs for alignment in examples.
+\ProvideDocumentCommand \• {} {\phantom{=}}
+
+%% Small spaces.
+%%
+%% These override the builtin ones which are only defined for math mode and
+%% which I don't use.
+\DeclareDocumentCommand \! {} {\nolinebreak\hspace{0.2ex}}
+\DeclareDocumentCommand \: {} {\nolinebreak\hspace{-0.2ex}}
+
+%% Stigmata macros.
+\ProvideDocumentCommand \† {} {\llap{\textsuperscript*{†}}}
+
+%% Command to force lining numerals instead of old style.
+\ProvideDocumentCommand \liningnumerals {m}
+	{\begingroup\addfontfeatures{Letters=Uppercase,Numbers=Lining}#1\endgroup}
+
+%% Second language abbreviation.
+\ProvideDocumentCommand \Lone {} {\liningnumerals{L1}}
+\ProvideDocumentCommand \Ltwo {} {\liningnumerals{L2}}
+
+%% Orthography abbreviation.
+%\ProvideDocumentCommand \NSone {} {\liningnumerals{NS1}}
+%\ProvideDocumentCommand \NStwo {} {\liningnumerals{NS2}}
+
+%% Empty spacing for gloss abbreviation (\glc) line.
+\DeclareDocumentCommand {\glcsp} {s}
+	{\hspace{1em}\IfBooleanTF{#1}{\hspace{1em}}}
+
+%% Fake spacing for gloss text line (\gla), using ExPex’s length.
+\DeclareDocumentCommand {\glasp} {} {\hspace\lingglspace}
+
+%% Verb ephemera.
+\ProvideDocumentCommand \vbeph { m m }
+	{(\IfNoValueOrEmptyTF{#1}{}{\fm{#1}\IfNoValueOrEmptyTF{#2}{}{; }}\IfNoValueOrEmptyTF{#2}{}{#2})}
+
+%% Verb lexical entry.
+\ProvideDocumentCommand \vblex { m m m m }
+	{\IfNoValueOrEmptyTF{#1}{}{\fm{#1} }\vbeph{#2}{#3}\IfNoValueOrEmptyTF{#4}{}{ ‘#4’}}
+
+%% Verb derivation.
+\ProvideDocumentCommand \vbderiv { m m m m }
+	{\vblex{#1}{#2}{#3}{#4}}
+
+%% Verb lexical entry in examples.
+\ProvideDocumentCommand \exvblex { s m m m m }
+	{\IfBooleanTF{#1}{}{\newline}\footnotesize\vblex{#2}{#3}{#4}{#5}\normalsize}
+
+%% Verb derivation in examples.
+\ProvideDocumentCommand \exvbderiv { s m m m m }
+	{\IfBooleanTF{#1}{}{\newline}\footnotesize\vbderiv{#2}{#3}{#4}{#5}\normalsize}
+
+%% Binominal species names.
+\ProvideDocumentCommand \species { s m m o} 
+	{\textit{#2}~\textit{#3}\IfNoValueOrEmptyTF{#4}{}{~\IfNoValueTF{#1}{(}{}#4\IfNoValueTF{#1}{)}{}}}
+
+%% Some memoir configuration for marginal notes.
+\marginparmargin{right}
+\setmarginnotes{1ex}{4em}{0.5ex}
+%% Margin note for example number.
+\DeclareDocumentCommand {\exmn} {m} {\marginpar{\footnotesize{}(#1)}}
+
+%% Kerning for sentence numbers before double quotes.
+\ProvideDocumentCommand \qqk {}
+	{\nolinebreak\hspace{-0.5ex}}
+
+%% Pre-guillemet phantom spacing.
+%% For use in glosses wherethe \gla line has a guillemet quote.
+\ProvideDocumentCommand \pqp {}
+	{\phantom{\normalfont«\!}}
